@@ -1,0 +1,658 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Home page";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Timetable</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            text-align: center;
+            padding: 8px;
+            min-width: 80px;
+        }
+
+        th {
+            background-color: #f4f4f4;
+        }
+
+        /*        .job {
+            color: #fff;
+            padding: 4px;
+            border-radius: 4px;
+        }*/
+        .job {
+            background-color: #607D8B;
+            color: white;
+            padding: 4px;
+            text-align: center;
+            border-radius: 4px;
+            font-size: 0.85em;
+            white-space: nowrap;
+        }
+
+        .Locksmith {
+            background-color: #4CAF50;
+        }
+
+        .Electrical {
+            background-color: #2196F3;
+        }
+
+        .Plumbing {
+            background-color: #FF5722;
+        }
+
+        .General {
+            background-color: #9C27B0;
+        }
+
+        .HVAC {
+            background-color: #FFC107;
+        }
+    </style>
+    <style>
+        .timetable {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            font-family: Arial, sans-serif;
+        }
+
+        .tech-row {
+            display: flex;
+            margin-bottom: 12px;
+            align-items: center;
+        }
+
+        .tech-label {
+            width: 10%;
+            padding-right: 10px;
+            text-align: right;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        .job-track {
+            width: 90%;
+            height: 40px;
+            position: relative;
+            background-color: #f5f5f5;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        .job {
+            position: absolute;
+            height: 100%;
+            color: #fff;
+            font-size: 0.8em;
+            padding: 4px;
+            border-radius: 4px;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            box-sizing: border-box;
+        }
+
+        .Locksmith {
+            background-color: #4CAF50;
+        }
+
+        .Electrical {
+            background-color: #2196F3;
+        }
+
+        .Plumbing {
+            background-color: #FF5722;
+        }
+
+        .General {
+            background-color: #9C27B0;
+        }
+
+        .HVAC {
+            background-color: #FFC107;
+            color: black;
+        }
+        .job-track div:not(.job) {
+            background-color: rgba(0, 0, 0, 0.05); /* soft gray debug */
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 10%;
+            left: 10%;
+            width: 80%;
+            background-color: white;
+            border-radius: 8px;
+            z-index: 2000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+      
+
+        .modal .close {
+            position: absolute;
+            right: 16px;
+            top: 8px;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        #map-modal {
+            display: none;
+            position: fixed;
+            top: 5vh;
+            left: 5vw;
+            width: 90vw;
+            height: 90vh;
+            background: white;
+            z-index: 2000;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            box-sizing: border-box;
+        }
+
+
+        .modal-content {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            box-sizing: border-box;
+            padding: 0; /* Remove padding to allow map to use all space */
+        }
+
+
+        #map {
+            flex-grow: 1;
+            width: 100%;
+            height: 100%;
+            border-top: 1px solid #ccc;
+            box-sizing: border-box;
+        }
+
+
+        .modal-content .close {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 24px;
+            font-weight: bold;
+            color: #555;
+            cursor: pointer;
+            z-index: 10;
+        }
+
+    </style>
+
+</head>
+<body>
+
+    <h2>
+        Technician Timetable
+        <button onclick="openNewJobModal()" style="margin-left: 20px; font-size: 0.9em;">+ New Job</button>
+    </h2>
+    <div class="timetable"></div>
+    @*<table id="timetable">
+            <thead>
+                <tr>
+                    <th>Technician</th>
+                    <th>Timeline (09:00 - 17:00)</th>
+                </tr>
+            </thead>
+            <tbody>
+         Dynamic rows here
+        </tbody>
+        </table>*@
+    @*<div class="timetable">
+            <div class="tech-row">
+                <div class="tech-label">Tech #1</div>
+                <div class="job-track">
+                    <div class="job Locksmith" style="left: 10%; width: 15%;">Locksmith (1h12m)</div>
+                    <div class="job Plumbing" style="left: 30%; width: 10%;">Plumbing (48m)</div>
+                </div>
+            </div>
+        </div>*@
+
+    <h3>Unassigned Jobs</h3>
+    <div id="unassigned-jobs" style="margin-top: 10px; padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
+        <ul style="list-style: none; padding-left: 0;"></ul>
+    </div>
+
+    <h3>Assigned Jobs</h3>
+    <table id="assigned-jobs" style="border-collapse: collapse; width: 100%; margin-top: 10px;">
+        <thead>
+            <tr>
+                <th>Technician</th>
+                <th>Job ID</th>
+                <th>Skill</th>
+                <th>Start Time</th>
+                <th>Duration</th>
+                <th>Lat</th>
+                <th>Lng</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Filled dynamically -->
+        </tbody>
+    </table>
+    <div id="editor-modal" style="display:none; position:fixed; top:20%; left:50%; transform:translateX(-50%);
+    background:white; padding:20px; border:1px solid #ccc; border-radius:8px; z-index:1000; box-shadow: 0 2px 10px rgba(0,0,0,0.3);">
+        <h3 id="edit_job_title">Edit Job</h3>
+        <form id="edit-form">
+            <input type="hidden" id="edit-job-id" />
+            <label>
+                state:
+                <select id="edit-job-state-id">
+                    <option>Pending</option>
+                    <option>Ongoing</option>
+                    <option>Done</option>
+
+                </select>
+            </label><br><br>
+
+            @*<label>Start Time: <input type="time" id="edit-time" required></label><br><br>*@
+            <label>Duration: <input type="text" id="edit-duration" placeholder="HH:MM" required></label><br><br>
+
+            <button type="submit">Save</button>
+            <button type="button" id="delete-btn" style="margin-left: 10px; color: red;">Cancel Job</button>
+            <button type="button" onclick="closeEditor()" style="margin-left: 10px;">Close</button>
+        </form>
+    </div>
+    <div id="new-job-modal" style="display: none; position: fixed; top: 20%; left: 35%; width: 30%; background: white; padding: 20px; border: 1px solid #ccc; border-radius: 8px; box-shadow: 0 2px 12px rgba(0,0,0,0.3); z-index: 999;">
+        <h3>Add New Job</h3>
+        <form id="new-job-form">
+            @*<label>Technician ID: <input type="text" id="new-tech-id" required></label><br><br>*@
+            @*<label>Start Time: <input type="time" id="new-job-time" required></label><br><br>*@
+            <label>Duration (HH:MM): <input type="text" id="new-job-duration" placeholder="01:30" pattern="^\d{1,2}:\d{2}$" required></label><br><br>
+            <label>
+                Skill:
+                <select id="new-job-skill">
+                    <option>Locksmith</option>
+                    <option>Electrical</option>
+                    <option>Plumbing</option>
+                    <option>General</option>
+                    <option>HVAC</option>
+                </select>
+            </label><br><br>
+            <button type="submit">Add</button>
+            <button type="button" onclick="closeNewJobModal()" style="margin-left: 10px;">Cancel</button>
+        </form>
+    </div>
+    <div id="map-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <div id="map" style="width: 100%; height: 500px;"></div>
+        </div>
+    </div>
+    <!-- Mapbox CSS -->
+    <link href="https://api.mapbox.com/mapbox-gl-js/v2.10.0/mapbox-gl.css" rel="stylesheet" />
+    <!-- Mapbox JS -->
+    <script src="https://api.mapbox.com/mapbox-gl-js/v2.10.0/mapbox-gl.js"></script>
+    <script src="~/js/mapboxKey.js"></script>
+    <script>let solutionId = null;
+        let timetableData = null; // cache for reuse
+
+        async function fetchTimetableData() {
+            const res = await fetch('/api/JobSolver/GenerateRandomSample', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            });
+
+            const data = await res.json();
+            solutionId = data.id;
+            timetableData = data;
+            renderTimetableUI(data);
+        }
+
+        function renderTimetableUI(data) {
+            const tableBody = document.querySelector("#timetable tbody");
+            if (tableBody) {
+                tableBody.innerHTML = "";
+            }
+
+            const unassignedContainer = document.querySelector("#unassigned-jobs ul");
+            if (unassignedContainer) {
+                unassignedContainer.innerHTML = "";
+            }
+
+            const assignedJobsBody = document.querySelector("#assigned-jobs tbody");
+            if (assignedJobsBody) {
+                assignedJobsBody.innerHTML = "";
+            }
+
+            const container = document.querySelector(".timetable");
+            if (container) {
+                container.innerHTML = "";
+            };
+
+            // Unassigned Jobs
+            Object.entries(data.unassignedJobs).forEach(([job_id, job]) => {
+                const li = document.createElement("li");
+                li.innerHTML = `
+                        <strong>${job.requiredSkill}</strong> @@ ${job.sla} - ${job.durationEstimate}
+                        <span style="color: gray; font-size: 0.9em;">(ID: ${job.id.slice(0, 6)})</span>
+                    `;
+                li.style.marginBottom = "6px";
+                unassignedContainer.appendChild(li);
+            });
+
+            // Timetable & Assigned Jobs
+            Object.entries(data.assignments).forEach(([techId, jobs]) => {
+                // UI track
+                //const tech = data.technicians[techId]; // 👈 Grab full tech data
+                const tech = data.technicians.find(t => t.id === techId);
+
+
+
+                const techRow = document.createElement("div");
+                techRow.className = "tech-row";
+
+                const label = document.createElement("div");
+                label.className = "tech-label";
+
+                //label.textContent = techId.slice(0, 8);
+                // 👇 Prefer name, or fall back to skill
+                if (tech?.name && tech?.skill) {
+                    //label.textContent = tech?.name.slice(0, 5) + " (" + tech?.skill + ")";
+                    label.textContent = tech?.name + " (" + tech?.skill + ")";
+                }
+                else {
+                    label.textContent = techId.slice(0, 8);
+                }
+
+
+                techRow.appendChild(label);
+                label.addEventListener("click", () => {
+                    showTechnicianMap(techId);
+                });
+
+                const track = document.createElement("div");
+                track.className = "job-track";
+
+                let lastEnd = 0;
+
+                //jobs.forEach(job => {
+                Object.entries(jobs).forEach(([job_Id, job]) => {
+                    const [h, m, s = 0] = job.startTime.split(':').map(Number);
+                    const [durH, durM] = job.durationEstimate.split(':').map(Number);
+
+                    const startMin = ((h - 9) * 60) + m + (s / 60);
+                    const durationMin = durH * 60 + durM;
+                    const endMin = startMin + durationMin;
+                    const totalDayMin = 480;
+
+                    // Spacer
+                    if (startMin > lastEnd) {
+                        const spacer = document.createElement("div");
+                        spacer.style.position = 'absolute';
+                        spacer.style.left = `${(lastEnd / totalDayMin) * 100}%`;
+                        spacer.style.width = `${((startMin - lastEnd) / totalDayMin) * 100}%`;
+                        spacer.style.height = '100%';
+                        spacer.style.backgroundColor = 'transparent';
+                        track.appendChild(spacer);
+                    }
+
+                    const jobDiv = document.createElement("div");
+                    jobDiv.className = `job ${job.requiredSkill}`;
+                    jobDiv.style.left = `${(startMin / totalDayMin) * 100}%`;
+                    jobDiv.style.width = `${(durationMin / totalDayMin) * 100}%`;
+                    jobDiv.textContent = `${job.requiredSkill} (${job.durationEstimate})`;
+                    jobDiv.addEventListener("click", () => openEditor(job, techId));
+                    track.appendChild(jobDiv);
+
+                    lastEnd = endMin;
+
+                    // Table row (detailed view)
+                    const tr = document.createElement("tr");
+                    tr.innerHTML = `
+                            <td>${techId.slice(0, 8)}</td>
+                            <td>${job.id}</td>
+                            <td>${job.requiredSkill}</td>
+                            <td>${job.startTime}</td>
+                            <td>${job.durationEstimate}</td>
+                            <td>${job.location.lat.toFixed(5)}</td>
+                            <td>${job.location.lng.toFixed(5)}</td>
+                        `;
+                    assignedJobsBody.appendChild(tr);
+                });
+
+                techRow.appendChild(track);
+                container.appendChild(techRow);
+            });
+        }
+
+        fetchTimetableData();
+
+
+
+        function openEditor(job, techId) {
+            document.getElementById("editor-modal").style.display = "block";
+            document.getElementById("edit-job-id").value = job.id;
+            //document.getElementById("edit-skill").value = job.requiredSkill;
+            //document.getElementById("edit-time").value = job.executionTime.slice(0, 5);
+            document.getElementById("edit-duration").value = job.durationEstimate;
+            document.getElementById("edit_job_title").innerHTML = "Edit " + job.requiredSkill;
+
+
+            document.getElementById("delete-btn").onclick = async () => {
+                //console.log("Delete requested for job:", job.id);
+                const updatedJob = {
+                    id: job.id,
+                    problemID: solutionId,
+                };
+                const res = await fetch('/api/JobSolver/DeleteJob', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(updatedJob),
+                });
+
+                if (res.ok) {
+                    console.log("deleting job:", job.id);
+                    closeEditor();
+                    const data = await res.json();
+                    timetableData = data;
+                    renderTimetableUI(data);
+                    // You could send this to the backend and re-render the view
+                }
+
+                // You can call DELETE API or just remove from view/state
+            };
+        }
+
+        function closeEditor() {
+            document.getElementById("editor-modal").style.display = "none";
+        }
+
+        document.getElementById("edit-form").addEventListener("submit", async e => {
+            e.preventDefault();
+            const updatedJob = {
+                id: document.getElementById("edit-job-id").value,
+                state: document.getElementById("edit-job-state-id").value,
+                durationEstimate: document.getElementById("edit-duration").value,
+                problemID: solutionId,
+            };
+            const res = await fetch('/api/JobSolver/EditJob', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(updatedJob),
+            });
+
+            if (res.ok) {
+                console.log("Saving job:", updatedJob);
+                closeEditor();
+                const data = await res.json();
+                timetableData = data;
+                renderTimetableUI(data);
+                // You could send this to the backend and re-render the view
+            }
+        });
+
+
+
+        function openNewJobModal() {
+            document.getElementById("new-job-modal").style.display = "block";
+        }
+
+        function closeNewJobModal() {
+            document.getElementById("new-job-modal").style.display = "none";
+        }
+
+        document.getElementById("new-job-form").addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            //const techId = document.getElementById("new-tech-id").value.trim();
+            //const time = document.getElementById("new-job-time").value;
+            const duration = document.getElementById("new-job-duration").value;
+            const skill = document.getElementById("new-job-skill").value;
+
+            if (!duration || !skill) return;
+            if (!isValidDuration(duration)) {
+                alert("Please enter a valid duration in HH:MM format (e.g., 01:30).");
+                return;
+            }
+
+            const newJob = {
+                problemID: solutionId,
+                id: "manual_" + Math.random().toString(36).slice(2, 8),
+
+                durationEstimate: duration,
+                requiredSkill: skill,
+                location: { lat: 0, lng: 0 } // dummy location
+            };
+
+            console.log("New job created:", newJob);
+
+            // You can now:
+            // - push this to your existing data.assignments[techId] (if it exists)
+            // - or call your API to save it
+
+
+            const res = await fetch('/api/JobSolver/AddJob', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(newJob),
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+                timetableData = data;
+                renderTimetableUI(data);
+                //alert("Job created. You can now refresh to see it on the timeline.");
+                closeNewJobModal();
+            }
+
+
+        });
+
+        function isValidDuration(duration) {
+            const match = duration.match(/^(\d{1,2}):(\d{2})$/);
+            if (!match) return false;
+
+            const hours = parseInt(match[1], 10);
+            const minutes = parseInt(match[2], 10);
+
+            return hours >= 0 && minutes >= 0 && minutes < 60 && (hours > 0 || minutes > 0);
+        }
+
+        document.querySelectorAll('.tech-label').forEach(label => {
+            label.addEventListener('click', () => {
+                const techId = label.textContent.trim();
+                showTechnicianMap(techId);
+            });
+        });
+
+        async function showTechnicianMap(techId) {
+
+
+            //const jobs = data.assignments[techId];
+            const jobs = timetableData.assignments[techId];
+            //const coords = Object.values(jobs).map(j => [j.location.lng, j.location.lat]);
+            const tech = timetableData.technicians.find(t => t.id.startsWith(techId));
+            const originCoord = [tech.origin.lng, tech.origin.lat];
+
+            const coords = [
+                originCoord,
+                ...Object.values(jobs)
+                    .sort((a, b) => a.startTime.localeCompare(b.startTime))
+                    .map(j => [j.location.lng, j.location.lat])
+            ];
+
+
+
+
+            mapboxgl.accessToken = mapbox_key;
+            const map = new mapboxgl.Map({
+                container: 'map',
+                style: 'mapbox://styles/mapbox/streets-v11',
+                center: coords[0],
+                zoom: 11
+            });
+            // Add origin marker
+
+            document.getElementById('map-modal').style.display = 'block';
+
+            setTimeout(() => {
+                map.resize();
+            }, 300); // delay slightly to allow DOM layout
+
+
+            coords.forEach((coord, index) => {
+                new mapboxgl.Marker().setLngLat(coord).setPopup(new mapboxgl.Popup().setText(`Job ${index + 1}`)).addTo(map);
+            });
+            new mapboxgl.Marker({ color: 'green' })
+                .setLngLat(originCoord)
+                .setPopup(new mapboxgl.Popup().setText(`Origin`))
+                .addTo(map);
+
+            // Optional: Draw lines between jobs
+            map.on('load', () => {
+                map.addSource('route', {
+                    type: 'geojson',
+                    data: {
+                        type: 'Feature',
+                        geometry: {
+                            type: 'LineString',
+                            coordinates: coords
+                        }
+                    }
+                });
+                map.addLayer({
+                    id: 'route-line',
+                    type: 'line',
+                    source: 'route',
+                    paint: {
+                        'line-width': 4,
+                        'line-color': '#007cbf'
+                    }
+                });
+            });
+
+            document.getElementById('map-modal').style.display = 'block';
+        }
+        document.querySelector('.close').onclick = () => {
+            document.getElementById('map-modal').style.display = 'none';
+        };</script>
+
+</body>
+</html>

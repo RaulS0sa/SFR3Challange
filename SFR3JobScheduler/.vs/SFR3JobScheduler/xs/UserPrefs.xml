@@ -1,0 +1,43 @@
+﻿<Properties StartupConfiguration="{27E793FA-64CD-44B5-AD8D-6BEFC89EA965}|https">
+  <MonoDevelop.Ide.Workbench ActiveDocument="SFR3JobScheduler/API/JobSolver.cs">
+    <Files>
+      <File FileName="SFR3JobScheduler/Pages/Index.cshtml" Line="436" Column="14" />
+      <File FileName="SFR3JobScheduler/JssJobHandler/JssSessionService.cs" Line="56" Column="27" />
+      <File FileName="SFR3JobScheduler/JssJobHandler/JssJob.cs" Line="32" Column="14" />
+      <File FileName="SFR3JobScheduler/Program.cs" Line="35" Column="12" />
+      <File FileName="SFR3JobScheduler/JssJobHandler/Solver.cs" Line="106" Column="1" />
+      <File FileName="SFR3JobScheduler/JssJobHandler/Types/Technician.cs" Line="53" Column="1" />
+      <File FileName="SFR3JobScheduler/JssJobHandler/Types/Job.cs" Line="15" Column="59" />
+      <File FileName="SFR3JobScheduler/JssJobHandler/Types/Solution.cs" Line="13" Column="25" />
+      <File FileName="SFR3JobScheduler/API/ValuesController.cs" Line="292" Column="16" />
+    </Files>
+    <Pads>
+      <Pad Id="ProjectPad">
+        <State name="__root__">
+          <Node name="SFR3JobScheduler" expanded="True">
+            <Node name="SFR3JobScheduler" expanded="True">
+              <Node name="API" expanded="True" />
+              <Node name="JssJobHandler" expanded="True">
+                <Node name="Types" expanded="True" />
+              </Node>
+              <Node name="Pages" expanded="True">
+                <Node name="Index.cshtml" expanded="True" selected="True" />
+              </Node>
+              <Node name="Properties" expanded="True" />
+              <Node name="wwwroot" expanded="True" />
+            </Node>
+          </Node>
+        </State>
+      </Pad>
+    </Pads>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.ItemProperties.SFR3JobScheduler PreferredExecutionTarget="/Applications/Google Chrome.app" />
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore>
+      <Breakpoint file="/Users/raulsosa/Documents/GitHub/SFR3JobScheduler/SFR3JobScheduler/API/JobSolver.cs" relfile="SFR3JobScheduler/API/JobSolver.cs" line="111" column="1" />
+    </BreakpointStore>
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MultiItemStartupConfigurations />
+</Properties>
