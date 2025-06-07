@@ -25,7 +25,8 @@ namespace SFR3JobScheduler.API
         [HttpPost("GenerateRandomSample")]
         public async Task<IActionResult> GenerateRandomSample()
         {
-            var New_operation = JssJob.createRandomJob(technicians_ammount :10);
+            //var New_operation = JssJob.createRandomJob(technicians_ammount :10);
+            var New_operation = JssJob.createRandomJob();
             var New_solution = new Solution();
             New_solution.UnassignedJobs = New_operation.jobs;
             foreach(var techni in New_operation.technicians)
@@ -276,25 +277,6 @@ namespace SFR3JobScheduler.API
             // Parse and apply edits
             job.DurationEstimate = TimeSpan.Parse(request.durationEstimate);
 
-            var newState = Job.mapping.ContainsKey(request.state)
-                ? Job.mapping[request.state]
-                : job.jobState;
-
-            job.jobState = newState;
-
-            // If job is no longer pending, keep it unassigned but updated
-            if (job.jobState != JobState.pending)
-            {
-                og_problem.UnassignedJobs[request.id] = job;
-                return Ok(new
-                {
-                    Assignments = og_problem.Assignments,
-                    UnassignedJobs = og_problem.UnassignedJobs,
-                    ID = og_problem.ID,
-                    technicians = og_problem.technicians
-                });
-            }
-
             // If it's pending again, try re-optimizing
             var solv = new Solver(og_problem);
             var actual_sol = solv.solve();
@@ -308,7 +290,34 @@ namespace SFR3JobScheduler.API
             });
         }
 
+        [HttpPost("DeleteUnnasignedJob")]
+        public async Task<IActionResult> DeleteUnnasignedJob([FromBody] EditJssJob request)
+        {
+            var og_problem = await jssSessionService.GetSingleSessions(request.problemID);
 
+            if (!og_problem.UnassignedJobs.TryGetValue(request.id, out var job))
+            {
+                return NotFound($"Job with ID {request.id} not found in unassigned jobs.");
+            }
+
+            // 3. If it's in unassigned, just remove it
+            if (og_problem.UnassignedJobs.ContainsKey(request.id))
+            {
+                og_problem.UnassignedJobs.Remove(request.id);
+            }
+
+            // ♻️ Re-solve the problem with remaining unassigned jobs
+            var solv = new Solver(og_problem);
+            var actual_sol = solv.solve();
+
+            return Ok(new
+            {
+                id = actual_sol.ID,
+                assignments = actual_sol.Assignments,
+                unassignedJobs = actual_sol.UnassignedJobs,
+                technicians = actual_sol.technicians
+            });
+        }
 
         public class CreateJssJob
         {
