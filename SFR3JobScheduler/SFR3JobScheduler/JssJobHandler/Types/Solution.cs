@@ -3,7 +3,6 @@ namespace SFR3JobScheduler.JssJobHandler.Types
 {
     public class Solution
     {
-        // Technician Name (or ID) => List of Assigned Jobs
         public string ID = Guid.NewGuid().ToString();
 
         public Dictionary<string, Dictionary<string, Job>> Assignments { get; set; } = new();
@@ -45,16 +44,10 @@ namespace SFR3JobScheduler.JssJobHandler.Types
         {
             if (Assignments.TryGetValue(technicianName, out var jobs))
             {
-                var jobToRemove = jobs[jobId];//jobs.FirstOrDefault(j => j.Id == jobId);
+                var jobToRemove = jobs[jobId];
                 if (jobToRemove != null)
                 {
                     jobs.Remove(jobToRemove.Id);
-
-                    // Optional: Remove the technician from the dictionary if they have no jobs left
-                    if (jobs.Count == 0)
-                    {
-                        Assignments.Remove(technicianName);
-                    }
 
                     return true;
                 }

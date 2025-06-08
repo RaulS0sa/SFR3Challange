@@ -202,7 +202,10 @@
             cursor: pointer;
             z-index: 10;
         }
-
+.job-track > div:not(.job) {
+    background-color: rgba(0, 0, 0, 0.05); /* optional: for visual debugging */
+    pointer-events: none; /* this is the key fix */
+}
     </style>
 
 </head>
@@ -261,6 +264,7 @@
         <h3 id="edit_job_title">Edit Job</h3>
         <form id="edit-form">
             <input type="hidden" id="edit-job-id" />
+            
             <label>
                 state:
                 <select id="edit-job-state-id">
@@ -270,7 +274,7 @@
 
                 </select>
             </label><br><br>
-
+            <label>priority: <input type="number" id="edit-job-priority"  required></label><br><br>
             @*<label>Start Time: <input type="time" id="edit-time" required></label><br><br>*@
             <label>Duration: <input type="text" id="edit-duration" placeholder="HH:MM" required></label><br><br>
 
@@ -365,9 +369,10 @@
             // Unassigned Jobs
             Object.entries(data.unassignedJobs).forEach(([job_id, job]) => {
                 const li = document.createElement("li");
-                li.innerHTML = `
+                li.innerHTML = `<button>
                         <strong>${job.requiredSkill}</strong> @@ ${job.sla} - ${job.durationEstimate}
                         <span style="color: gray; font-size: 0.9em;">(ID: ${job.id.slice(0, 6)})</span>
+                    </button>
                     `;
                 li.addEventListener("click", () => {
                     //alert(job.id);
@@ -440,7 +445,11 @@
                     jobDiv.style.left = `${(startMin / totalDayMin) * 100}%`;
                     jobDiv.style.width = `${(durationMin / totalDayMin) * 100}%`;
                     jobDiv.textContent = `${job.requiredSkill} (${job.durationEstimate})`;
-                    jobDiv.addEventListener("click", () => openEditor(job, techId));
+                    jobDiv.addEventListener("click", () => {
+                        console.log("Clicked job:", job.id);
+                        openEditor(job, techId);
+                        
+                    });
                     track.appendChild(jobDiv);
 
                     lastEnd = endMin;
@@ -471,8 +480,12 @@
         function openEditor(job, techId) {
             document.getElementById("editor-modal").style.display = "block";
             document.getElementById("edit-job-id").value = job.id;
+
+            document.getElementById("edit-job-priority").value = job.priority;
             //document.getElementById("edit-skill").value = job.requiredSkill;
             //document.getElementById("edit-time").value = job.executionTime.slice(0, 5);
+            document.getElementById("edit-job-state-id").selectedIndex = job.jobState;
+           
             document.getElementById("edit-duration").value = job.durationEstimate;
             document.getElementById("edit_job_title").innerHTML = "Edit " + job.requiredSkill;
 
@@ -545,14 +558,16 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(updatedJob),
                 });
-
+                const data = await res.json();
                 if (res.ok) {
                     console.log("deleting job:", job_id);
                     closeUnassignedEditor();
-                    const data = await res.json();
+                    
                     timetableData = data;
                     renderTimetableUI(data);
                     // You could send this to the backend and re-render the view
+                } else {
+                    alert(data.message);
                 }
 
                 // You can call DELETE API or just remove from view/state
@@ -560,10 +575,12 @@
 
         document.getElementById("edit-form").addEventListener("submit", async e => {
             e.preventDefault();
+            
             const updatedJob = {
                 id: document.getElementById("edit-job-id").value,
                 state: document.getElementById("edit-job-state-id").value,
                 durationEstimate: document.getElementById("edit-duration").value,
+                priority : document.getElementById("edit-job-priority").value,
                 problemID: solutionId,
             };
             const res = await fetch('/api/JobSolver/EditJob', {
@@ -571,14 +588,17 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(updatedJob),
             });
-
+            const data = await res.json();
             if (res.ok) {
                 console.log("Saving job:", updatedJob);
                 closeEditor();
-                const data = await res.json();
+                
                 timetableData = data;
                 renderTimetableUI(data);
                 // You could send this to the backend and re-render the view
+            }
+            else {
+                alert(data.message);
             }
         });
 

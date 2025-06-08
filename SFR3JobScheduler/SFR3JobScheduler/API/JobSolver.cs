@@ -221,6 +221,10 @@ namespace SFR3JobScheduler.API
                         {
                             job.DurationEstimate = duration;
                             job.jobState = JobState.pending;
+                            if (request.priority != null)
+                            {
+                                job.priority = request.priority.Value;
+                            }
                         }
 
                         og_problem.UnassignedJobs[job.Id] = job;
@@ -245,9 +249,47 @@ namespace SFR3JobScheduler.API
                 }
                 else
                 {
+                    var first_job = og_problem.Assignments[technician]
+                        .Where(kvp => kvp.Value.jobState == JobState.pending)
+                        .FirstOrDefault().Value;
+                    if (first_job != jobCopy)
+                    {
+                        return BadRequest(new
+                        {
+                            message = "only the first job can change its state"
+                        });
+                    }
                     // If NOT pending, just update the job directly
                     jobCopy.DurationEstimate = duration;
                     jobCopy.jobState = new_state;
+                    // Rebuild that tech's timeline from scratch
+                    if (og_problem.Assignments.TryGetValue(technician, out var jobs))
+                    {
+                        var tempTech = og_problem.technicians.FirstOrDefault(x => x.Id == technician);
+                        if (tempTech != null)
+                        {
+                            tempTech.CurrentTime = TimeSpan.FromHours(9);
+                            tempTech.Location = tempTech.Origin;
+
+                            // Reorder jobs chronologically (or preserve insertion order if that’s your logic)
+                            var orderedJobs = jobs.Values.OrderBy(j => j.StartTime).ToList();
+
+                            var prevLocation = tempTech.Origin;
+
+                            foreach (var job in orderedJobs)
+                            {
+                                var dist = Solver.hypot(prevLocation, job.Location);
+                                var transport = TimeSpan.FromMinutes(dist * 111.1);
+
+                                job.StartTime = tempTech.CurrentTime + transport;
+
+                                tempTech.CurrentTime = job.StartTime + job.DurationEstimate;
+                                tempTech.Location = job.Location;
+
+                                prevLocation = job.Location;
+                            }
+                        }
+                    }
                 }
             }
 
@@ -338,6 +380,7 @@ namespace SFR3JobScheduler.API
             public string problemID { get; set; }
 
             public string? state { get; set; }
+            public int? priority { get; set; }
 
             public string? durationEstimate { get; set; }
             

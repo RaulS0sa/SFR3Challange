@@ -28,6 +28,8 @@ namespace SFR3JobScheduler.JssJobHandler.Types
         public string RequiredSkill { get; set; }
         public JobState jobState { get; set; }
 
+        public int priority { get; set; }
+
         private static readonly string[] Skills = {
             "HVAC", "Plumbing", "Electrical", "General", "Locksmith"
         };
@@ -45,6 +47,7 @@ namespace SFR3JobScheduler.JssJobHandler.Types
                 Id = Guid.NewGuid().ToString()[..8],
                 Location = new LatLng(lat, lon),
                 DurationEstimate = TimeSpan.FromMinutes(rand.Next(30, 120)), // 30 mins to 2 hours
+                priority = rand.Next(1, 4), // 3 levels of priority
                 //DurationEstimate = TimeSpan.FromMinutes(60), // 30 mins to 2 hours
                 StartTime = TimeSpan.FromHours(9), // due in 9–12 hours from day start
                 SLA = TimeSpan.FromHours(17), // due in 9–12 hours from day start
