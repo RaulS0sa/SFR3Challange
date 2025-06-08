@@ -57,11 +57,17 @@ namespace SFR3JobScheduler.API
             // Create new job with random location
             float lat = 33.9f + (float)rand.NextDouble() * 0.25f;
             float lon = -118f + (float)rand.NextDouble() * 0.25f;
+            int default_priority = 1;
+            if (request.priority != null)
+            {
+                default_priority = request.priority.Value;
+            }
 
             var newJob = new Job
             {
                 Id = request.id,
                 Location = new LatLng(lat, lon),
+                priority = default_priority,
                 DurationEstimate = duration,
                 StartTime = TimeSpan.FromHours(9),
                 SLA = TimeSpan.FromHours(17),
@@ -369,6 +375,8 @@ namespace SFR3JobScheduler.API
 
             public string durationEstimate { get; set; }
             public string requiredSkill { get; set; }
+
+            public int? priority { get; set; }
             public LatLng location { get; set; }
 
         }

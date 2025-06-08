@@ -289,6 +289,8 @@
             @*<label>Technician ID: <input type="text" id="new-tech-id" required></label><br><br>*@
             @*<label>Start Time: <input type="time" id="new-job-time" required></label><br><br>*@
             <label>Duration (HH:MM): <input type="text" id="new-job-duration" placeholder="01:30" pattern="^\d{1,2}:\d{2}$" required></label><br><br>
+            @* new-job-priority *@
+            <label>priority: <input type="number" id="new-job-priority"></label><br><br>
             <label>
                 Skill:
                 <select id="new-job-skill">
@@ -619,6 +621,7 @@
             //const time = document.getElementById("new-job-time").value;
             const duration = document.getElementById("new-job-duration").value;
             const skill = document.getElementById("new-job-skill").value;
+            const set_priority = document.getElementById("new-job-priority").value;
 
             if (!duration || !skill) return;
             if (!isValidDuration(duration)) {
@@ -629,7 +632,7 @@
             const newJob = {
                 problemID: solutionId,
                 id: "manual_" + Math.random().toString(36).slice(2, 8),
-
+                priority: set_priority,
                 durationEstimate: duration,
                 requiredSkill: skill,
                 location: { lat: 0, lng: 0 } // dummy location
