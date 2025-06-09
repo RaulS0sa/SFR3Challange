@@ -67,9 +67,21 @@ namespace SFR3JobScheduler.JssJobHandler.Types
                 Name = fullName,
                 Location = new LatLng(lat, lon),
                 Origin = new LatLng(lat, lon),
-                Skill = Skills[ i % Skills.Length],
+                Skill = Skills[i % Skills.Length],
 
                 CurrentTime = TimeSpan.FromHours(9) // Start between 6-9 AM
+            };
+        }
+        
+        public Technician Clone()
+        {
+            return new Technician
+            {
+                Id = this.Id,
+                Skill = this.Skill,
+                Origin = new LatLng { Lat = this.Origin.Lat, Lng = this.Origin.Lng },
+                Location = new LatLng { Lat = this.Location.Lat, Lng = this.Location.Lng },
+                CurrentTime = this.CurrentTime
             };
         }
     }

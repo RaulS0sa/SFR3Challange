@@ -17,7 +17,9 @@ namespace SFR3JobScheduler.JssJobHandler
         }
 		public Solution solve()
 		{
+            
             var nn = new NearestNeightbor(solution);
+            
             foreach (var tech in solution.technicians)
             {
                 // Find latest assigned job to resume after
@@ -37,11 +39,12 @@ namespace SFR3JobScheduler.JssJobHandler
                 }
 
                 nn.Run(tech);
-                //NearestNeighbor(tech);
-                //BestFirstSearch(tech);
+                // bfs.BestFirstS(tech);
+                
 
             }
-
+            // Compare KPIs
+            // KPIReport.Compare(solutionNN, solutionBFS);
             return solution;
 		}
         

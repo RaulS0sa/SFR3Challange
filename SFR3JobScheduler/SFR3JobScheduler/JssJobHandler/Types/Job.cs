@@ -9,7 +9,7 @@ namespace SFR3JobScheduler.JssJobHandler.Types
         ongoing,
         done
     }
-    
+
     public class Job
     {
         public static Dictionary<string, JobState> mapping = new Dictionary<string, JobState>()
@@ -52,6 +52,20 @@ namespace SFR3JobScheduler.JssJobHandler.Types
                 StartTime = TimeSpan.FromHours(9), // due in 9–12 hours from day start
                 SLA = TimeSpan.FromHours(17), // due in 9–12 hours from day start
                 RequiredSkill = Skills[rand.Next(Skills.Length)]
+            };
+        }
+        public Job Clone()
+        {
+            return new Job
+            {
+                Id = this.Id,
+                RequiredSkill = this.RequiredSkill,
+                Location = new LatLng { Lat = this.Location.Lat, Lng = this.Location.Lng },
+                DurationEstimate = this.DurationEstimate,
+                SLA = this.SLA,
+                StartTime = this.StartTime,
+                jobState = this.jobState,
+                priority = this.priority
             };
         }
     }
