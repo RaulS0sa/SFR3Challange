@@ -158,7 +158,6 @@ This tool models the problem as a priority and skill-constrained VRP (Vehicle Ro
 
 - Job creation, deletion or update
 
-- Assignment changes
 
 ## Features
 - Interactive visual schedule (HTML canvas)
