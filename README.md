@@ -180,9 +180,11 @@ This tool models the problem as a priority and skill-constrained VRP (Vehicle Ro
 
 - Throughtput
 
+- Job Priority Coverage
+
 - Assignation Variance
 
-- Technician idle time
+- Technician idle time and Delays
 
 - Job lateness or missed SLAs
 
