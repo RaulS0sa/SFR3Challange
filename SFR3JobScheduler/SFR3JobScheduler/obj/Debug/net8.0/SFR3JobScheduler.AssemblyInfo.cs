@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("SFR3JobScheduler")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+e96e16e3018627d54e2e952001e0deff83f21ab3")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+2a9c973b15b07c5b6f9862c6d3a7039a31e959f9")]
 [assembly: System.Reflection.AssemblyProductAttribute("SFR3JobScheduler")]
 [assembly: System.Reflection.AssemblyTitleAttribute("SFR3JobScheduler")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

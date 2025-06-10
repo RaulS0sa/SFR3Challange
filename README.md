@@ -86,9 +86,6 @@ This tool models the problem as a priority and skill-constrained VRP (Vehicle Ro
 
 - Monitoring Layer: Track KPIs like job lateness, reassignment rate, travel time.
 
-## Clients & Interfaces
-- Who are the clients of this system? (e.g., internal ops teams, mobile apps for Property Engineers)
-- What mechanisms allow feedback or overrides to flow back into the system?
 
 ## Clients & Interfaces
 ### Clients:
