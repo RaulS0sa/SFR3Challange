@@ -25,7 +25,7 @@ namespace SFR3JobScheduler.API
         [HttpPost("GenerateRandomSample")]
         public async Task<IActionResult> GenerateRandomSample()
         {
-            //var New_operation = JssJob.createRandomJob(technicians_ammount :10);
+            //var New_operation = JssJob.createRandomJob( technicians_ammount : 8,  job_lb : 30,  job_ub : 40);
             var New_operation = JssJob.createRandomJob();
             var New_solution = new Solution();
             New_solution.UnassignedJobs = New_operation.jobs;
@@ -97,10 +97,10 @@ namespace SFR3JobScheduler.API
                 technician.Location = technician.Origin;
             }
 
-            // ✅ Add new job to UnassignedJobs
+            // Add new job to UnassignedJobs
             og_problem.UnassignedJobs[newJob.Id] = newJob;
 
-            // ♻️ Re-solve
+            // Re-solve
             var solv = new Solver(og_problem);
             var actual_sol = solv.solve();
 
@@ -119,7 +119,7 @@ namespace SFR3JobScheduler.API
             string technicianId = null;
             Job jobToDelete = null;
 
-            // 1. Find job in technician assignments
+            // Find job in technician assignments
             foreach (var (techId, jobDict) in og_problem.Assignments)
             {
                 if (jobDict.TryGetValue(request.id, out var job))
@@ -130,7 +130,7 @@ namespace SFR3JobScheduler.API
                 }
             }
 
-            // 2. If assigned, unassign it and pending jobs for reoptimization
+            // If assigned, unassign it and pending jobs for reoptimization
             if (technicianId != null && jobToDelete != null)
             {
                 var tech = og_problem.technicians.FirstOrDefault(t => t.Id == technicianId);
@@ -171,7 +171,7 @@ namespace SFR3JobScheduler.API
                 og_problem.UnassignedJobs.Remove(request.id);
             }
 
-            // ♻️ Re-solve the problem with remaining unassigned jobs
+            // Re-solve the problem with remaining unassigned jobs
             var solv = new Solver(og_problem);
             var actual_sol = solv.solve();
 
@@ -348,13 +348,13 @@ namespace SFR3JobScheduler.API
                 return NotFound($"Job with ID {request.id} not found in unassigned jobs.");
             }
 
-            // 3. If it's in unassigned, just remove it
+            //  If it's in unassigned, just remove it
             if (og_problem.UnassignedJobs.ContainsKey(request.id))
             {
                 og_problem.UnassignedJobs.Remove(request.id);
             }
 
-            // ♻️ Re-solve the problem with remaining unassigned jobs
+            // Re-solve the problem with remaining unassigned jobs
             var solv = new Solver(og_problem);
             var actual_sol = solv.solve();
 
